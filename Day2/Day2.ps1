@@ -1,23 +1,6 @@
 $puzzleInput = Get-Content .\input
 
-<#
-    Opponent moves:
-    A = Rock
-    B = Paper
-    C = Scissors
-
-    Proposed moves:
-    X = Rock
-    Y = Paper
-    Z = Scissors
-
-    Points:
-    Round lost  = 0
-    Round draw  = 3
-    Round won   = 6
-#>
-
-$moves = @{
+$moveList = @{
     "Rock" = @{
         "Name" = "Rock"
         "Strength" = "Scissors"
@@ -39,36 +22,45 @@ $moves = @{
 }
 
 $moveSet = @{
-    "A" = $moves.Rock
-    "X" = $moves.Rock
-    "B" = $moves.Paper
-    "Y" = $moves.Paper
-    "C" = $moves.Scissors
-    "Z" = $moves.Scissors
+    "A" = $moveList.Rock
+    "X" = $moveList.Rock
+    "B" = $moveList.Paper
+    "Y" = $moveList.Paper
+    "C" = $moveList.Scissors
+    "Z" = $moveList.Scissors
 }
 
-$movePoints = @{
-    Rock = 1
-    Paper = 2
-    Scissors = 3
-}
+function Get-Result ($proposal, $opponent, [switch]$RealMoveNames) {
+    if ($RealMoveNames.IsPresent) {
+        # Loss
+        if ($moveList.$proposal.Weakness -eq $opponent) {
+            return 0
+        }
 
-function EnumerateResult ($proposal, $opponent) {
-    # 0 = loss, 1 = draw, 2 = win
+        # Draw
+        if ($moveList.$proposal -eq $moveList.$opponent) {
+            return 1
+        }
 
-    # Loss
-    if ($moveSet.$proposal.Weakness -eq $moveSet.$opponent.Name) {
-        return 0
-    }
-
-    # Draw
-    if ($moveSet.$proposal -eq $moveSet.$opponent) {
-        return 1
-    }
-
-    # Win
-    if ($moveSet.$proposal.Strength -eq $moveSet.$opponent.Name) {
-        return 2
+        # Win
+        if ($moveList.$proposal.Strength -eq $opponent) {
+            return 2
+        }
+    } else {
+        # Loss
+        if ($moveSet.$proposal.Weakness -eq $moveSet.$opponent.Name) {
+            return 0
+        }
+    
+        # Draw
+        if ($moveSet.$proposal -eq $moveSet.$opponent) {
+            return 1
+        }
+    
+        # Win
+        if ($moveSet.$proposal.Strength -eq $moveSet.$opponent.Name) {
+            return 2
+        }
     }
 }
 
@@ -78,54 +70,44 @@ $puzzleInput | % {
     # Get moves
     $opponent = $_.split(" ")[0]
     $proposal = $_.split(" ")[1]
-    
-    # Write-Host "> $_ ($($moveSet.$opponent.Name) vs $($moveSet.$proposal.Name)) " -f cyan -NoNewline
 
     # Define outcome
-    $result = EnumerateResult $proposal $opponent
-
-    <#
-        switch ($result) {
-            0 { Write-Host "LOSS" -f red }
-            1 { Write-Host "DRAW" -f yellow }
-            2 { Write-Host "WIN" -f green }
-        }
-    #>
+    $result = Get-Result $proposal $opponent
 
     $points += ($result * 3) + $moveSet.$proposal.Points
 }
 
 $points
 
-# Part two TODO
+# Part two
 function Get-Proposal ($opponent, $outcome) {
-    [string]$proposal = ""
-
     switch ($outcome) {
         # Lose
         "X" {
-            
+            return $moveSet.$opponent.Strength
         }
 
         # Draw
         "Y" {
-
+            return $moveSet.$opponent.Name
         }
 
         # Win
         "Z" {
-
+            return $moveSet.$opponent.Weakness
         }
     }
-
-    return $proposal
 }
 
+$points = 0
 $puzzleInput | % {
-    # Get moves
     $opponent = $_.split(" ")[0]
     $outcome = $_.split(" ")[1]
 
-    $result = EnumerateResult $proposal $opponent
-    $points += ($result * 3) + $moveSet.$proposal.Points
+    $proposal = Get-Proposal $opponent $outcome
+
+    $result = Get-Result $proposal $moveSet.$opponent.Name -RealMoveNames
+    $points += ($result * 3) + $moveList.$proposal.Points
 }
+
+$points
