@@ -19,5 +19,11 @@ internal class Program {
         }
 
         Console.WriteLine("Total score: " + totalScore);
+        Console.WriteLine(" ");
+
+        // Part two
+        var b = new BadgeIdentifier(Puzzle);
+        b.GetBadgeItemType();
+        Console.WriteLine("DONE");
     }
 }
