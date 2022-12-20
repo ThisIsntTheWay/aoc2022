@@ -23,7 +23,7 @@ internal class Program {
 
         // Part two
         var b = new BadgeIdentifier(Puzzle);
-        b.GetBadgeItemType();
+        b.GetBadgeItemTypeResult();
         Console.WriteLine("DONE");
     }
 }
